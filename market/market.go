@@ -2,17 +2,20 @@ package market
 
 import (
 	"log"
+	"math/big"
 	"sync"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/unicornultrafoundation/subnet-ray-manager/config"
 	"github.com/unicornultrafoundation/subnet-ray-manager/market/contracts"
+	"github.com/unicornultrafoundation/subnet-ray-manager/market/types"
 )
 
 // Service defines the interface for handling onchain events.
 type Service interface {
-	OnOrderCreated(event *contracts.ClusterMarketOrderCreated)
+	OnOrderCreated(order *types.Order)
 	// Add more event handler methods as needed (e.g. OnOrderExtended, OnOrderScaled, ...)
 }
 
@@ -85,7 +88,13 @@ func (s *ClusterMarketService) watchOrderCreated() {
 				event.Price.String(),
 				event.DiscountPrice.String(),
 			)
-			s.service.OnOrderCreated(event)
+
+			order, err := s.GetOrder(event.OrderId)
+			if err != nil {
+				log.Printf("Failed to get order details for OrderId %s: %v", event.OrderId.String(), err)
+				continue
+			}
+			s.service.OnOrderCreated(order)
 		}
 	}
 }
@@ -115,4 +124,31 @@ func (s *ClusterMarketService) GetEthClient() *ethclient.Client {
 // GetContract returns the contract instance used by the onchain service.
 func (s *ClusterMarketService) GetContract() *contracts.ClusterMarket {
 	return s.Contract
+}
+
+// GetOrder retrieves order information from the contract by orderId.
+func (s *ClusterMarketService) GetOrder(orderId *big.Int) (*types.Order, error) {
+	callOpts := &bind.CallOpts{}
+	orderStruct, err := s.Contract.Orders(callOpts, orderId)
+	if err != nil {
+		return nil, err
+	}
+	order := &types.Order{
+		Id:             orderId,
+		User:           orderStruct.User,
+		Status:         orderStruct.Status,
+		Ip:             orderStruct.Ip,
+		Gpu:            orderStruct.Gpu,
+		Cpu:            orderStruct.Cpu,
+		MemoryBytes:    orderStruct.MemoryBytes,
+		Disk:           orderStruct.Disk,
+		Network:        orderStruct.Network,
+		RentalDuration: orderStruct.RentalDuration,
+		PaymentToken:   orderStruct.PaymentToken,
+		ClusterId:      orderStruct.ClusterId,
+		PaidAmount:     orderStruct.PaidAmount,
+		DiscountAmount: orderStruct.DiscountAmount,
+		OrderType:      orderStruct.OrderType,
+	}
+	return order, nil
 }

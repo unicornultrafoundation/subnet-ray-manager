@@ -1,8 +1,6 @@
 package cluster
 
-import (
-	"github.com/unicornultrafoundation/subnet-ray-manager/market/contracts"
-)
+import "github.com/unicornultrafoundation/subnet-ray-manager/market/types"
 
 // Service handles Ray cluster operations based on onchain events.
 type Service struct {
@@ -15,7 +13,7 @@ func NewService() *Service {
 }
 
 // HandleCreateCluster handles the creation of a new Ray cluster for an order.
-func (s *Service) OnOrderCreated(event *contracts.ClusterMarketOrderCreated) {
+func (s *Service) OnOrderCreated(order *types.Order) {
 	// Implement logic to create a Ray cluster based on the order details.
 	// This could involve calling Ray APIs, setting up resources, etc.
 	// Use event.OrderId, event.User, event.ClusterSize, etc. as needed.
