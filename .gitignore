@@ -1,0 +1,22 @@
+# Binaries
+/subnet-ray-manager
+
+# Build output
+/build
+/bin
+
+# Vendor
+/vendor
+
+# IDE/editor
+*.swp
+*.swo
+*.idea/
+.vscode/
+*.log
+
+# OS files
+.DS_Store
+
+# Env files
+.env

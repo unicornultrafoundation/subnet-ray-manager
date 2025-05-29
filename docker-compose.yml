@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  subnet-ray-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ETH_RPC_URL=${ETH_RPC_URL}
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+      - CONTRACT_ABI=${CONTRACT_ABI}
+    restart: unless-stopped
